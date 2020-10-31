@@ -14,11 +14,11 @@ namespace ttu_mms_relay.Controllers
   [Route("[controller]")]
   public class MmsController : ControllerBase
   {
-    private readonly ILogger<MmsController> m_Logger;
+    private ILogger<MmsController> Logger { get; set; }
 
     public MmsController(ILogger<MmsController> logger)
     {
-      this.m_Logger = logger;
+      this.Logger = logger;
     }
 
     [HttpPost("receive")]
@@ -34,13 +34,13 @@ namespace ttu_mms_relay.Controllers
       // This application is strictly for incoming MMS.
       if (!Message.IsMmsRequest(data))
       {
-        this.m_Logger.LogInformation("Discarding incoming webhook (not MMS)");
+        this.Logger.LogInformation("Discarding incoming webhook (not MMS)");
         return Accepted();
       }
 
       var attachments = Message.GetMmsAttachments(data);
 
-      this.m_Logger.LogDebug(String.Format("Found {0} attachment{1}", attachments.Count, attachments.Count != 1 ? "s" : ""));
+      this.Logger.LogDebug(String.Format("Found {0} attachment{1}", attachments.Count, attachments.Count != 1 ? "s" : ""));
 
       try
       {
@@ -48,37 +48,45 @@ namespace ttu_mms_relay.Controllers
         {
           if (!MimeType.IsSupported(attachment))
           {
-            this.m_Logger.LogInformation(String.Format("Skipping attachment {0}: MimeType ({1}) not supported", attachment.SmsSid, attachment.MimeType));
+            this.Logger.LogInformation(String.Format("Skipping attachment {0}: MimeType ({1}) not supported", attachment.SmsSid, attachment.MimeType));
+            continue;
+          }
+
+          var blocked = relayConfig.AccessControl.Blocked.IndexOf(attachment.PhoneNumber) != -1;
+
+          if (blocked)
+          {
+            this.Logger.LogInformation(String.Format("Skipping attachment {0} from {1} (number is blocked)", attachment.SmsSid, attachment.PhoneNumber));
             continue;
           }
 
           var processor = new MediaProcessor(attachment, relayConfig);
 
-          this.m_Logger.LogDebug(attachment.Url + ": Download starting");
+          this.Logger.LogDebug(attachment.Url + ": Download starting");
           await processor.Download();
-          this.m_Logger.LogDebug(attachment.Url + ": Download finished");
+          this.Logger.LogDebug(attachment.Url + ": Download finished");
 
-          this.m_Logger.LogDebug(attachment.Url + ": Dropbox upload starting");
+          this.Logger.LogDebug(attachment.Url + ": Dropbox upload starting");
           await processor.UploadToDropbox();
-          this.m_Logger.LogDebug(attachment.Url + ": Dropbox upload finished");
+          this.Logger.LogDebug(attachment.Url + ": Dropbox upload finished");
 
-          this.m_Logger.LogDebug(attachment.Url + ": Twilio purge starting");
+          this.Logger.LogDebug(attachment.Url + ": Twilio purge starting");
           processor.RemoveFromTwilio();
-          this.m_Logger.LogDebug(attachment.Url + ": Twilio purge finished");
+          this.Logger.LogDebug(attachment.Url + ": Twilio purge finished");
 
-          this.m_Logger.LogDebug(attachment.Url + ": CleanUp starting");
+          this.Logger.LogDebug(attachment.Url + ": CleanUp starting");
           processor.CleanUp();
-          this.m_Logger.LogDebug(attachment.Url + ": CleanUp finished");
+          this.Logger.LogDebug(attachment.Url + ": CleanUp finished");
         }
       }
       catch (Exception ex)
       {
-        this.m_Logger.LogError(ex, "Error processing media");
+        this.Logger.LogError(ex, "Error processing media");
 
         return StatusCode(StatusCodes.Status502BadGateway, Problem("Error processing media", null, StatusCodes.Status502BadGateway));
       }
 
-      this.m_Logger.LogDebug(String.Format("Successfully processed {0} media object{1}", attachments.Count, attachments.Count != 1 ? "s" : ""));
+      this.Logger.LogDebug(String.Format("Successfully processed {0} media object{1}", attachments.Count, attachments.Count != 1 ? "s" : ""));
 
       return StatusCode(StatusCodes.Status202Accepted);
     }
