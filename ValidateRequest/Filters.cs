@@ -5,6 +5,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
+using ttu_mms_relay.Configs;
+using ttu_mms_relay.Helpers;
 using Twilio.Security;
 
 namespace ValidateRequest.Filters
@@ -21,7 +23,8 @@ namespace ValidateRequest.Filters
 
     public ValidateTwilioRequestAttribute()
     {
-      var authToken = Configuration["TwilioAuthToken"];
+      var relayConfig = Configurator.GetSection<RelayConfig>(Configuration, RelayConfig.Identifier);
+      var authToken = relayConfig.Twilio.AuthToken;
       _requestValidator = new RequestValidator(authToken);
     }
 
