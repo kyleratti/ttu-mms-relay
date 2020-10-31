@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    env_file: app.env
+    ports:
+      - 5000:5000
+    restart: always
