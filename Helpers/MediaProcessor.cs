@@ -37,7 +37,7 @@ namespace ttu_mms_relay.Helpers
 
     private string GetUploadFolder()
     {
-      var trusted = this.RelayConfig.AccessControl.Trusted.IndexOf(this.Media.PhoneNumber) != -1;
+      var trusted = this.RelayConfig.AccessControl.Trusted != null && this.RelayConfig.AccessControl.Trusted.IndexOf(this.Media.PhoneNumber) != -1;
       var path = this.RelayConfig.Dropbox.ReviewFolder;
 
       if (trusted)
