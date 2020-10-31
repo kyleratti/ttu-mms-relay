@@ -35,6 +35,22 @@ namespace ttu_mms_relay.Helpers
       return net.DownloadFileTaskAsync(new Uri(this.Media.Url), this.FilePath);
     }
 
+    private string GetUploadFolder()
+    {
+      var trusted = this.RelayConfig.AccessControl.Trusted.IndexOf(this.Media.PhoneNumber) != -1;
+      var path = this.RelayConfig.Dropbox.ReviewFolder;
+
+      if (trusted)
+      {
+        path = this.RelayConfig.Dropbox.LiveFolder;
+      }
+
+      if (!path.StartsWith("/")) path = "/" + path;
+      if (!path.EndsWith("/")) path += "/";
+
+      return path;
+    }
+
     /// <summary>
     /// Uploads the downloaded file to Dropbox
     /// </summary>
@@ -56,7 +72,7 @@ namespace ttu_mms_relay.Helpers
       return Task.Run(async () =>
       {
         using var stream = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read);
-        return await client.Files.UploadAsync("/__testing/needs review/" + newFileName, WriteMode.Add.Instance, body: stream);
+        return await client.Files.UploadAsync(this.GetUploadFolder() + newFileName, WriteMode.Add.Instance, body: stream);
       });
     }
 

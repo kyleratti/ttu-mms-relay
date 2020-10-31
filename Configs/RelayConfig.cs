@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace ttu_mms_relay.Configs
 {
   public class RelayConfig
@@ -6,6 +8,7 @@ namespace ttu_mms_relay.Configs
     /// The identifier of the section in appsettings associated with this object
     /// </summary>
     public static readonly string Identifier = "RelayConfig";
+    public AccessControlConfig AccessControl { get; set; }
     public DropboxConfig Dropbox { get; set; }
     public TwilioConfig Twilio { get; set; }
   }
@@ -16,8 +19,8 @@ namespace ttu_mms_relay.Configs
     /// A list of phone numbers which are 
     /// </summary>
     /// <value></value>
-    public string[] Allowed { get; set; }
-    public string[] Blocked { get; set; }
+    public List<string> Trusted { get; set; }
+    public List<string> Blocked { get; set; }
   }
 
   public class DropboxConfig
