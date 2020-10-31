@@ -16,17 +16,12 @@ namespace ttu_mms_relay
     }
 
     public static IConfiguration Configuration { get; private set; }
-    public static RelayConfig GetRelayConfig()
-    {
-      return Configuration.GetSection(RelayConfig.Identifier).Get<RelayConfig>();
-    }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddControllers();
 
-      // services.AddOptions();
       services.Configure<RelayConfig>(Configuration.GetSection(RelayConfig.Identifier));
     }
 
@@ -38,7 +33,7 @@ namespace ttu_mms_relay
         app.UseDeveloperExceptionPage();
       }
 
-      if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").ToLower() != "development")
+      if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() != "development")
       {
         app.UseHttpsRedirection();
       }
@@ -51,10 +46,6 @@ namespace ttu_mms_relay
       {
         endpoints.MapControllers();
       });
-
-      // var builder = new ConfigurationBuilder()
-      // .SetBasePath(env.ContentRootPath)
-      // .AddJsonFile("")
     }
   }
 }
