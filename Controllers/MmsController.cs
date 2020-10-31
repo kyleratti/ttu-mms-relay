@@ -52,7 +52,7 @@ namespace ttu_mms_relay.Controllers
             continue;
           }
 
-          var blocked = relayConfig.AccessControl.Blocked.IndexOf(attachment.PhoneNumber) != -1;
+          var blocked = relayConfig.AccessControl.Blocked != null && relayConfig.AccessControl.Blocked.IndexOf(attachment.PhoneNumber) != -1;
 
           if (blocked)
           {
