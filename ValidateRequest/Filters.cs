@@ -19,8 +19,9 @@ namespace ValidateRequest.Filters
     private static IConfigurationRoot Configuration =>
         new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true).
-            .AddEnvironmentVariables().Build();
+            .AddJsonFile("appsettings.json", true, true)
+            .AddEnvironmentVariables()
+            .Build();
 
     public ValidateTwilioRequestAttribute()
     {
