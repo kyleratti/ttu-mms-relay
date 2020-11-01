@@ -33,11 +33,6 @@ namespace ttu_mms_relay
         app.UseDeveloperExceptionPage();
       }
 
-      if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower() != "development")
-      {
-        app.UseHttpsRedirection();
-      }
-
       app.UseRouting();
 
       app.UseAuthorization();
